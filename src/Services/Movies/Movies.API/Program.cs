@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Movies.API.Data;
 using Movies.API.Models;
 
@@ -8,13 +10,40 @@ builder.Services.AddDbContext<MoviesContext>(options => { options.UseInMemoryDat
 
 builder.Services.AddScoped<IDatabaseInitialize, DatabaseInitialize>();
 
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.Authority = builder.Configuration["ApiSettings:IdentityAPIAddress"]!;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Movies API V1");
+        c.RoutePrefix = string.Empty;
+    });
+}
 
 SeedData.EnsureSeedData(app);
 
-app.MapGet("/movies", async (MoviesContext db) =>
+app.UseAuthentication();
+app.UseAuthorization();
 
-    await db.Movies.ToListAsync());
+app.MapGet("/movies", async (MoviesContext db) =>
+    await db.Movies.ToListAsync())
+    .RequireAuthorization();
 
 app.MapGet("/movies/{id}", async (int id, MoviesContext db) =>
     await db.Movies.FindAsync(id));
