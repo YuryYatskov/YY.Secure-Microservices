@@ -7,6 +7,8 @@ public static class Config
     public const string Admin = "admin";
     public const string Customer = "customer";
 
+    public static WebApplicationBuilder? Builder { get; set; }
+
     public static IEnumerable<IdentityResource> IdentityResources =>
     [
         new IdentityResources.OpenId(),
@@ -34,7 +36,8 @@ public static class Config
             AllowedScopes =
             {
                 "moviesapi",
-            }
+            },
+            AllowedCorsOrigins = { Builder?.Configuration["ApiSettings:MoviesAPIAddress"]! }
         },
     ];
 }

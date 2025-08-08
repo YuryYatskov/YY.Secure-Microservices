@@ -1,8 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Extensions;
+using Microsoft.OpenApi.Models;
+using Movies.API;
 using Movies.API.Data;
 using Movies.API.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,14 +16,70 @@ builder.Services.AddDbContext<MoviesContext>(options => { options.UseInMemoryDat
 
 builder.Services.AddScoped<IDatabaseInitialize, DatabaseInitialize>();
 
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Description = "Movies API v1",
+        Title = "Movies API",
+        Version = "1.0"
+    });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    options.AddSecurityDefinition(SecuritySchemeType.OAuth2.GetDisplayName(),
+        new OpenApiSecurityScheme
+        {
+            Type = SecuritySchemeType.OAuth2,
+            Flows = new OpenApiOAuthFlows
+            {
+                ClientCredentials = new OpenApiOAuthFlow
+                {
+                    TokenUrl = new Uri($"{builder.Configuration["ApiSettings:IdentityAPIAddress"]!}/connect/token"),
+                    Scopes = new Dictionary<string, string>() {
+                        {
+                            builder.Configuration["ApiSettings:Scope"]!,
+                            builder.Configuration["ApiSettings:ScopeName"]!
+                        }
+                    }
+                }
+            }
+        });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = SecuritySchemeType.OAuth2.GetDisplayName()
+                },
+                Scheme = SecuritySchemeType.OAuth2.GetDisplayName(),
+                Name = JwtBearerDefaults.AuthenticationScheme,
+                In = ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
+});
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.Authority = builder.Configuration["ApiSettings:IdentityAPIAddress"]!;
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["ApiSettings:Key"]!)),
+            ValidateIssuer = false,
             ValidateAudience = false
         };
     });
@@ -33,6 +95,10 @@ if (app.Environment.IsDevelopment())
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Movies API V1");
         c.RoutePrefix = string.Empty;
+
+        c.OAuthClientId(builder.Configuration["ApiSettings:ClientId"]!);
+        c.OAuthClientSecret(builder.Configuration["ApiSettings:Key"]!);
+        c.OAuthScopes(builder.Configuration["IdentityServer:ApiScopes"]);
     });
 }
 
