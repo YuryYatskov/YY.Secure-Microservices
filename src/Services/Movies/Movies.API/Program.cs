@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
-using Movies.API;
 using Movies.API.Data;
 using Movies.API.Models;
 using System.Text;

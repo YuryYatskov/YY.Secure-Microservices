@@ -13,12 +13,13 @@ public static class HostingExtensions
     public static WebApplication ConfigureServices(this WebApplicationBuilder builder)
     {
         Config.Builder = builder;
+        
+        builder.Services.AddCors();
 
         builder.Services.AddRazorPages();
 
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("Database")));
-
 
         builder.Services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -55,6 +56,13 @@ public static class HostingExtensions
         {
             app.UseDeveloperExceptionPage();
         }
+
+        app.UseCors(builder =>
+        {
+            builder.AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowAnyOrigin();
+        });
 
         app.UseStaticFiles();
         app.UseRouting();

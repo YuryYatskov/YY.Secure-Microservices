@@ -1,6 +1,4 @@
 ﻿using Duende.IdentityModel;
-using Duende.IdentityServer.EntityFramework.DbContexts;
-using Duende.IdentityServer.EntityFramework.Mappers;
 using IdentityServer.Configurations;
 using IdentityServer.Entities;
 using Microsoft.AspNetCore.Identity;
@@ -10,8 +8,7 @@ namespace IdentityServer.Data;
 
 public class DatabaseInitialize(
     UserManager<ApplicationUser> userManager,
-    RoleManager<ApplicationRole> roleManager,
-    IServiceProvider serviceProvider) : IDatabaseInitialize
+    RoleManager<ApplicationRole> roleManager) : IDatabaseInitialize
 {
 
     public void Initialize()
@@ -31,7 +28,7 @@ public class DatabaseInitialize(
 
         if (userManager.FindByNameAsync(adminUser.UserName).Result == null)
         {
-            userManager.CreateAsync(adminUser, "Qwe123!@#$").GetAwaiter().GetResult();
+            userManager.CreateAsync(adminUser, "Qwer1234!@#$").GetAwaiter().GetResult();
             userManager.AddToRoleAsync(adminUser, Config.Admin).GetAwaiter().GetResult();
             _ = userManager.AddClaimsAsync(adminUser,
                 [

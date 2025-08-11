@@ -1,4 +1,5 @@
-﻿using Duende.IdentityServer.Models;
+﻿using Duende.IdentityServer;
+using Duende.IdentityServer.Models;
 
 namespace IdentityServer.Configurations;
 
@@ -13,6 +14,9 @@ public static class Config
     [
         new IdentityResources.OpenId(),
         new IdentityResources.Profile(),
+        new IdentityResources.Email(),
+        new IdentityResources.Address(),
+
     ];
 
     public static IEnumerable<ApiResource> ApiResources =>
@@ -39,6 +43,27 @@ public static class Config
             },
             AllowedCorsOrigins = { Builder?.Configuration["ApiSettings:MoviesAPIAddress"]! }
         },
+        new()
+        {
+            ClientId = "client_blazorui",
+            ClientName = "Blazor UI",
+            RequireClientSecret = false,
+            AllowedGrantTypes = GrantTypes.Code,
+            AllowedScopes =
+            {
+                IdentityServerConstants.StandardScopes.OpenId,
+                IdentityServerConstants.StandardScopes.Profile,
+                IdentityServerConstants.StandardScopes.Address,
+                IdentityServerConstants.StandardScopes.Email,
+                "moviesapi",
+            },
+            RequireConsent = false,
+            RequirePkce = true,
+            RedirectUris = { $"{Builder?.Configuration["ApiSettings:WebUIAddress"]!}/authentication/login-callback" },
+            PostLogoutRedirectUris = { $"{Builder?.Configuration["ApiSettings:WebUIAddress"]!}/authentication/logout-callback" },
+            AllowedCorsOrigins = { Builder?.Configuration["ApiSettings:WebUIAddress"]! },
+
+        }
     ];
 }
 

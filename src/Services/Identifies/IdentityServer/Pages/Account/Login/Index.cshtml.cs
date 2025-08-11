@@ -92,7 +92,7 @@ public class Index(
             // validate username/password against in-memory store
             if (signInResult.Succeeded)
             {
-                var user = contextDb.Users.FirstOrDefault(x => x.UserName!.Equals(Input.Username, StringComparison.CurrentCultureIgnoreCase));
+                var user = contextDb.Users.FirstOrDefault(x => x.UserName!.ToLower() == Input.Username!.ToLower());
                 if (user == null)
                 {
                     return Page();
