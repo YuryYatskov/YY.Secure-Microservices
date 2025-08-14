@@ -16,7 +16,7 @@ builder.Services.AddTransient<AuthenticationDelegatingHandler>();
 builder.Services.AddRefitClient<IMovieService>()
     .ConfigureHttpClient(c =>
     {
-        c.BaseAddress = new Uri("https://localhost:7000"); // builder.Configuration["ApiSettings:GatewayAddress"]!);
+        c.BaseAddress = new Uri("https://localhost:11000"); // builder.Configuration["ApiSettings:GatewayAddress"]!);
     })
     .AddHttpMessageHandler<AuthenticationDelegatingHandler>();
 

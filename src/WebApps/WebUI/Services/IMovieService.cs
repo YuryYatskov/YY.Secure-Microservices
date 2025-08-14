@@ -5,6 +5,6 @@ namespace WebUI.Services;
 
 public interface IMovieService
 {
-    [Get("/movies")] // "/movie-service/movies")]
+    [Get("/movie-service/movies")] // "/movie-service/movies" // "/movies"
     Task<GetMoviesResponse> GetMovies();
 }
