@@ -1,0 +1,62 @@
+﻿@page "/movies"
+@using Microsoft.AspNetCore.Authorization
+@using WebUI.Models
+@using WebUI.Services
+@inject IMovieService movieService
+@attribute [StreamRendering]
+@attribute [Authorize]
+
+<PageTitle>Movies</PageTitle>
+
+<h3>Movies</h3>
+
+@if (movies == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Genre</th>
+                <th>Rating</th>
+                <th>ReleaseDate</th>
+                <th>ImageUrl</th>
+                <th>Owner</th>
+                <th>Id</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movie in movies)
+            {
+                <tr>
+                    <td>@movie.Title</td>
+                    <td>@movie.Genre</td>
+                    <td>@movie.Rating</td>
+                    <td>@movie.ReleaseDate</td>
+                    <td>@movie.ImageUrl</td>
+                    <td>@movie.Owner</td>
+                    <td>@movie.Id</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private MovieModel[]? movies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadData();
+    }
+
+    public async Task LoadData()
+    {
+        var respons = await movieService.GetMovies();
+        movies = respons.Movies.ToArray();
+    }
+}

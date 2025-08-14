@@ -9,6 +9,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors();
+
 builder.Services.AddDbContext<MoviesContext>(options => { options.UseInMemoryDatabase("Movies"); });
 
 builder.Services.AddScoped<IDatabaseInitialize, DatabaseInitialize>();
@@ -71,13 +73,13 @@ builder.Services.AddAuthentication(options =>
         options.Authority = builder.Configuration["ApiSettings:IdentityAPIAddress"]!;
         options.RequireHttpsMetadata = false;
         options.SaveToken = true;
-
+  
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["ApiSettings:Key"]!)),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
         };
     });
 
@@ -99,14 +101,23 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseCors(builder =>
+{
+    builder.AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowAnyOrigin();
+});
+
 SeedData.EnsureSeedData(app);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGet("/movies", async (MoviesContext db) =>
-    await db.Movies.ToListAsync())
-    .RequireAuthorization();
+{ 
+    var movies = await db.Movies.ToArrayAsync();
+    return Results.Ok(new GetMoviesResponse(movies));
+}).RequireAuthorization();
 
 app.MapGet("/movies/{id}", async (int id, MoviesContext db) =>
     await db.Movies.FindAsync(id));

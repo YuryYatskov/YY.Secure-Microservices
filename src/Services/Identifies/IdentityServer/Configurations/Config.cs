@@ -16,7 +16,6 @@ public static class Config
         new IdentityResources.Profile(),
         new IdentityResources.Email(),
         new IdentityResources.Address(),
-
     ];
 
     public static IEnumerable<ApiResource> ApiResources =>

@@ -1,6 +1,6 @@
-﻿namespace Movies.API.Models;
+﻿namespace WebUI.Models;
 
-public class Movie
+public class MovieModel
 {
     public int Id { get; set; }
 
@@ -10,7 +10,7 @@ public class Movie
 
     public string Rating { get; set; } = string.Empty;
 
-    public DateTime ReleaseDate{ get; set; }
+    public DateTime ReleaseDate { get; set; }
 
     public string ImageUrl { get; set; } = string.Empty;
 
@@ -18,4 +18,4 @@ public class Movie
 }
 
 // Wrapper classes.
-public record GetMoviesResponse(IEnumerable<Movie> Movies);
+public record GetMoviesResponse(IEnumerable<MovieModel> Movies);
